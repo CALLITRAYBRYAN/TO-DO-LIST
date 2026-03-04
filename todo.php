@@ -4,46 +4,46 @@ include 'db.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-/* =========================
-   ADD TASK
-========================= */
-if (isset($_POST['add'])) {
+$dbReadWrite = function ($query, $action = 'add') use ($conn) {
+    $stmt = $conn->prepare($query);
 
-    $stmt = $conn->prepare("INSERT INTO tasks (task, category, priority, status) VALUES (?, ?, ?, 'pending')");
-    $stmt->bind_param("sss", $_POST['task'], $_POST['category'], $_POST['priority']);
+    switch ($action) {
+        case 'add':
+            $stmt->bind_param("sss", $_POST['task'], $_POST['category'], $_POST['priority']);
+            break;
+        case 'edit':
+            $stmt->bind_param("sssi", $_POST['task'], $_POST['category'], $_POST['priority'], $_POST['id']);
+            break;
+        case 'delete':
+            $stmt->bind_param("i", $_GET['delete']);
+            break;
+    }
+
     $stmt->execute();
     $stmt->close();
 
     header("Location: todo.php");
     exit();
+};
+/* =========================
+   ADD TASK
+========================= */
+if (isset($_POST['add'])) {
+    $dbReadWrite("INSERT INTO tasks (task, category, priority, status) VALUES (?, ?, ?, 'pending')", 'add');
 }
 
 /* =========================
    UPDATE TASK
 ========================= */
 if (isset($_POST['update'])) {
-
-    $stmt = $conn->prepare("UPDATE tasks SET task=?, category=?, priority=? WHERE id=?");
-    $stmt->bind_param("sssi", $_POST['task'], $_POST['category'], $_POST['priority'], $_POST['id']);
-    $stmt->execute();
-    $stmt->close();
-
-    header("Location: todo.php");
-    exit();
+    $dbReadWrite("UPDATE tasks SET task=?, category=?, priority=? WHERE id=?", 'edit');
 }
 
 /* =========================
    DELETE TASK
 ========================= */
 if (isset($_GET['delete'])) {
-
-    $stmt = $conn->prepare("DELETE FROM tasks WHERE id=?");
-    $stmt->bind_param("i", $_GET['delete']);
-    $stmt->execute();
-    $stmt->close();
-
-    header("Location: todo.php");
-    exit();
+    $dbReadWrite("DELETE FROM tasks WHERE id=?", 'delete');
 }
 
 /* =========================
@@ -82,86 +82,86 @@ if (isset($_GET['edit'])) {
 }
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Task Manager</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="container">
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Task Manager</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+    <div class="container">
 
-<h1>Task Manager</h1>
+        <h1>Task Manager</h1>
 
-<!-- ================= ADD / EDIT FORM ================= -->
+        <!-- ================= ADD / EDIT FORM ================= -->
 
-<form method="POST">
+        <form method="POST">
 
-    <input type="hidden" name="id" value="<?php echo $editTask['id'] ?? ''; ?>">
+            <input type="hidden" name="id" value="<?php echo $editTask['id'] ?? ''; ?>">
 
-    <input type="text" name="task"
-        value="<?php echo $editTask['task'] ?? ''; ?>"
-        placeholder="Enter Task" required>
+            <input type="text" name="task"
+                   value="<?php echo $editTask['task'] ?? ''; ?>"
+                   placeholder="Enter Task" required>
 
-    <select name="category" required>
-        <option value="">Select Category</option>
-        <option value="Work">Work</option>
-        <option value="Personal">Personal</option>
-        <option value="Study">Study</option>
-    </select>
+            <select name="category" required>
+                <option value="">Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Study">Study</option>
+            </select>
 
-    <select name="priority" required>
-        <option value="">Select Priority</option>
-        <option value="Low">Low</option>
-        <option value="Medium">Medium</option>
-        <option value="High">High</option>
-    </select>
+            <select name="priority" required>
+                <option value="">Select Priority</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
 
-    <?php if ($editTask): ?>
-        <button type="submit" name="update">Update Task</button>
-    <?php else: ?>
-        <button type="submit" name="add">Add Task</button>
-    <?php endif; ?>
+            <?php if ($editTask): ?>
+                <button type="submit" name="update">Update Task</button>
+            <?php else: ?>
+                <button type="submit" name="add">Add Task</button>
+            <?php endif; ?>
 
-</form>
+        </form>
 
-<hr>
+        <hr>
 
-<!-- ================= TASK TABLE ================= -->
+        <!-- ================= TASK TABLE ================= -->
 
-<table border="1" cellpadding="8">
-<tr>
-    <th>Task</th>
-    <th>Category</th>
-    <th>Priority</th>
-    <th>Status</th>
-    <th>Actions</th>
-</tr>
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Task</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
 
-<?php while($row = $result->fetch_assoc()): ?>
-<tr>
-    <td><?php echo $row['task']; ?></td>
-    <td><?php echo $row['category']; ?></td>
-    <td><?php echo $row['priority']; ?></td>
-    <td>
-        <a href="?toggle=<?php echo $row['id']; ?>">
-            <?php echo $row['status']; ?>
-        </a>
-    </td>
-    <td>
-        <a href="?edit=<?php echo $row['id']; ?>">Edit</a> |
-        <a href="?delete=<?php echo $row['id']; ?>"
-           onclick="return confirm('Delete this task?');">
-           Delete
-        </a>
-    </td>
-</tr>
-<?php endwhile; ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo $row['task']; ?></td>
+                    <td><?php echo $row['category']; ?></td>
+                    <td><?php echo $row['priority']; ?></td>
+                    <td>
+                        <a href="?toggle=<?php echo $row['id']; ?>">
+                            <?php echo $row['status']; ?>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="?edit=<?php echo $row['id']; ?>">Edit</a> |
+                        <a href="?delete=<?php echo $row['id']; ?>"
+                           onclick="return confirm('Delete this task?');">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
 
-</table>
+        </table>
 
-</div>
-</body>
-</html>
+    </div>
+    </body>
+    </html>
 
 <?php $conn->close(); ?>
