@@ -1,11 +1,5 @@
 <?php
 include 'db.php';
-
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $result = $conn->query("SELECT * FROM tasks WHERE id=$id");
-    $row = $result->fetch_assoc();
-}
 ?>
 
 <form method="POST" action="edit.php">
