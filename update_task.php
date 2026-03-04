@@ -8,8 +8,9 @@ include 'db.php';
     <input type="text" name="task" value="<?php echo $row['task']; ?>" required>
 
     <select name="category">
-        <option value="Work">Work</option>
-        <option value="Personal">Personal</option>
+        <option value="Work" <?php if($row['category']=="Work") echo "selected"; ?>>Work</option>
+        <option value="Personal" <?php if($row['category']=="Personal") echo "selected"; ?>>Personal</option>
+        <option value="Study" <?php if($row['category']=="Study") echo "selected"; ?>>Study</option>
     </select>
 
     <select name="priority">
