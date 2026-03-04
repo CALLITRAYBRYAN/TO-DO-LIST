@@ -9,7 +9,7 @@ $sql = "INSERT INTO tasks (task, category, priority, status) VALUES ('$task', '$
 // SQL query to insert the new task into the database
 
 if ($conn->query($sql) === TRUE) {
-    header("Location: index.php"); // Redirects back to the main page after adding the task
+    header("Location: todo.php"); // Redirects back to the main page after adding the task
     exit();
 } else {
     echo "Error: " . $sql . "<br>" . $conn->error;

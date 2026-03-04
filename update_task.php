@@ -35,7 +35,7 @@ if (isset($_POST['update'])) {
             WHERE id=$id";
 
     if ($conn->query($sql) === TRUE) {
-        header("Location: index.php");
+        header("Location: todo.php");
         exit();
     } else {
         echo "Error updating task: " . $conn->error;
