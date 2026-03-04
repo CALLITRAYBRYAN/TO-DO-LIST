@@ -9,11 +9,10 @@ include 'db.php';
      // SQL query to update the task in the database
 
     if ($conn->query($sql) === TRUE) {
-        echo "Task updated successfully";
+        header("Location: index.php");
+        exit();
     } else {
         echo "Error updating task: " . $conn->error;
     }
-
-    header("Location: index.php");
 $conn->close();
 ?>
