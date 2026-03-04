@@ -1,12 +1,43 @@
 <?php
 include 'db.php';
-    $id = $_GET['id']; 
-    $task = $_GETT['task']; 
-    $category = $_GET['category'];
-    $priority = $_GET['priority']; 
-    
-    $sql = "UPDATE tasks SET task='$task', category='$category', priority='$priority' WHERE id=$id"; 
-     // SQL query to update the task in the database
+
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+    $result = $conn->query("SELECT * FROM tasks WHERE id=$id");
+    $row = $result->fetch_assoc();
+}
+?>
+
+<form method="POST" action="edit.php">
+    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+
+    <input type="text" name="task" value="<?php echo $row['task']; ?>" required>
+
+    <select name="category">
+        <option value="Work">Work</option>
+        <option value="Personal">Personal</option>
+    </select>
+
+    <select name="priority">
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+    </select>
+
+    <button type="submit" name="update">Update</button>
+</form>
+
+<?php
+if (isset($_POST['update'])) {
+
+    $id = $_POST['id'];
+    $task = $_POST['task'];
+    $category = $_POST['category'];
+    $priority = $_POST['priority'];
+
+    $sql = "UPDATE tasks 
+            SET task='$task', category='$category', priority='$priority' 
+            WHERE id=$id";
 
     if ($conn->query($sql) === TRUE) {
         header("Location: index.php");
@@ -14,5 +45,7 @@ include 'db.php';
     } else {
         echo "Error updating task: " . $conn->error;
     }
+}
+
 $conn->close();
 ?>

@@ -1,6 +1,10 @@
 <?php
 include 'db.php';
-    $result = $conn->query("SELECT * FROM tasks ORDER BY created_at DESC");
+    if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+    $result = $conn->query("SELECT * FROM tasks WHERE id=$id");
+    $row = $result->fetch_assoc();
+}
 ?>
 <!DOCTYPE html>
 <html>
